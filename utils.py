@@ -56,3 +56,52 @@ def energyDistance(chain, selected, signs, omega, N_KEEP, full_chain_dist = 0):
     signs_matrix = np.matmul(signs[np.abs(selected) == 1][:, None], signs[np.abs(selected) == 1][None, :])
     return 2*(omega/(len(chain)*N_KEEP))* np.sum(signs[np.abs(selected) == 1]*np.sum(dist_mat, axis = 1)) - (omega/N_KEEP)**2*np.sum(
         signs_matrix*auto_dist_x) - full_chain_dist
+
+
+def log_star_second(z, n):
+    if z >= 1/n:
+        return -1/z**2
+
+    return -n**2
+
+
+def log_star_first(z,n):
+    if z >= 1/n:
+        return 1/z
+
+    return 2*n - n**2 * z
+
+log_star_second_vectorized = np.vectorize(log_star_second)
+log_star_first_vectorized = np.vectorize(log_star_first)
+
+
+def compute_increments(constraints, lambd, n):
+    ## Constraints is n_(sample, dimension_constraints)
+    z = np.dot(constraints, lambd) + 1
+    print("z:", z)
+    print("total:", -log_star_second_vectorized(z, n))
+    coeff = np.sqrt(-log_star_second_vectorized(z, n))
+    J = coeff[:, None]*constraints
+    mat_to_inv = np.dot(J.T, J)
+    y = log_star_first_vectorized(z, n)/coeff
+    increment = np.linalg.solve(mat_to_inv, np.dot(J.T, y))
+    return increment
+
+def newton_raphson(lambda_init, constraints):
+    n = len(constraints)
+    lambd = lambda_init
+    for i in range(20):
+        print(i)
+        weights = (1 / (np.dot(constraints, lambd) + 1)) * (1 / len(constraints))
+        print(np.mean(weights < 0))
+        inc = compute_increments(constraints, lambd, n)
+        lambd += inc
+        print("\n")
+
+    return lambd
+
+
+
+
+
+#print(log_star_second_vectorized(1.01383924, 2000000))
