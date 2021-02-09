@@ -48,8 +48,10 @@ else:
     weights = indexes["weights"]
     N_KEEP = indexes["M"]
     all_selected = indexes["all_selected"]
+    burnin = indexes["burnin"]
     n_experiments = len(all_selected)
     omega = np.sum(np.abs(weights))
+    chain = chain[burnin:]
     for i in range(n_experiments):
         print(i)
         start = time.time()
