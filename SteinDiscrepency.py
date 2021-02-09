@@ -52,6 +52,7 @@ else:
     n_experiments = len(all_selected)
     omega = np.sum(np.abs(weights))
     chain = chain[burnin:]
+    gradient = gradient[burnin:]
     for i in range(n_experiments):
         print(i)
         start = time.time()
