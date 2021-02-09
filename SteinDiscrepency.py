@@ -50,7 +50,7 @@ else:
     all_selected = indexes["all_selected"]
     n_experiments = len(all_selected)
     omega = np.sum(np.abs(weights))
-    for i in range(all_selected):
+    for i in range(n_experiments):
         print(i)
         start = time.time()
         selected = all_selected[i, :]
