@@ -5,12 +5,13 @@ from stein_thinning.thinning import thin
 from stein_thinning.kernel import make_imq
 import time
 import numpy as np
+import time
 
 
 parser = argparse.ArgumentParser(description="Run stein thinning")
 parser.add_argument("chain_path", help="path of the chain")
 parser.add_argument("gradient_path", help="path of the gradient")
-parser.add_argument("indexes_pah", help="path of the indexes and weights")
+parser.add_argument("indexes_path", help="path of the indexes and weights")
 parser.add_argument("output_path", help="path of the output weigths")
 
 
@@ -30,10 +31,13 @@ if "SMPCOV" in indexes.keys() or "SCLMED" in indexes.keys() or "MED" in indexes.
     results = {}
 
     for method in indexes.keys():
+        print(method)
+        start = time.time()
         ## Computing k_stein(x,y)
         thin_mat = kmat(chain[indexes[method]["indexes"]], gradient[indexes[method]["indexes"]], vfk0)
         KSD_thin = np.sqrt(np.mean(thin_mat))
         results[method] = KSD_thin
+        print(time.time() - start)
 
     np.save(output_path, results, allow_pickle=True)
 
@@ -46,10 +50,13 @@ else:
     n_experiments = len(all_selected)
     omega = np.sum(np.abs(weights))
     for i in range(all_selected):
+        print(i)
+        start = time.time()
         selected = all_selected[i, :]
         thin_mat = kmat(chain[np.abs(selected) == 1], gradient[np.abs(selected) == 1], vfk0)
         result = np.sqrt(np.sum(selected[:, None]*thin_mat*selected[None, :])*(omega/N_KEEP))
         all_KSD.append(result)
+        print(time.time() - start)
 
 
     np.save(output_path, {"KSD":np.array(all_KSD)}, allow_pickle=True)
