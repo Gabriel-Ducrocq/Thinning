@@ -37,6 +37,7 @@ if "SMPCOV" in indexes.keys() or "SCLMED" in indexes.keys() or "MED" in indexes.
         thin_mat = kmat(chain[indexes[method]["indexes"]], gradient[indexes[method]["indexes"]], vfk0)
         KSD_thin = np.sqrt(np.mean(thin_mat))
         results[method] = KSD_thin
+        print("KSD " + method + ": ", KSD_thin)
         print(time.time() - start)
 
     np.save(output_path, results, allow_pickle=True)
