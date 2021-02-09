@@ -55,7 +55,7 @@ else:
         start = time.time()
         selected = all_selected[i, :]
         thin_mat = kmat(chain[np.abs(selected) == 1], gradient[np.abs(selected) == 1], vfk0)
-        result = np.sqrt(np.sum(selected[:, None]*thin_mat*selected[None, :])*(omega/N_KEEP))
+        result = np.sqrt(np.sum(selected[np.abs(selected) == 1, None]*thin_mat*selected[None, np.abs(selected) == 1])*(omega/N_KEEP)**2)
         all_KSD.append(result)
         print("KSD " +  ": ", result)
         print(time.time() - start)
