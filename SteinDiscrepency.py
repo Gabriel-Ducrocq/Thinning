@@ -46,7 +46,7 @@ if "SMPCOV" in indexes.keys() or "SCLMED" in indexes.keys() or "MED" in indexes.
 else:
     all_KSD = []
     weights = indexes["weights"]
-    N_KEEP = indexes["N_KEEP"]
+    N_KEEP = indexes["M"]
     all_selected = indexes["all_selected"]
     n_experiments = len(all_selected)
     omega = np.sum(np.abs(weights))
