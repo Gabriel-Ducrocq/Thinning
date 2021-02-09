@@ -118,3 +118,6 @@ def compute_distance_matrix(x, y, Sigma=None):
             distance_matrix[i, j] = d_ij
 
     return distance_matrix
+
+
+
