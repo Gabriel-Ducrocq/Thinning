@@ -10,7 +10,7 @@ parser.add_argument("chain_path", help="path of the chain")
 parser.add_argument("gradient_path", help="path of the gradient")
 parser.add_argument("indexes_path", help="path of the indexes and weights")
 parser.add_argument("output_path", help="path of the output weigths")
-parser.add_argument("burnin", help="burnin of the full chain")
+parser.add_argument("burnin", help="burnin of the full chain", type = int)
 
 
 arguments = parser.parse_args()
