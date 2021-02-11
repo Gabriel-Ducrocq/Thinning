@@ -154,9 +154,10 @@ def discrepency(chain1, chain2, chol_sigma_approx, mu_approx, n_max=100000, weig
     for i in prange(n_max):
         if weights is None:
             all_discrepancies[i] = np.abs(
-                np.mean(all_us_chain1 < all_unifs[i, :]) - np.mean(all_us_chain2 < all_unifs[i, :]))
+                np.mean(np.prod(all_us_chain1 < all_unifs[i, :], axis=1)) - np.mean(np.prod(all_us_chain2 < all_unifs[i, :], axis = 1)))
         else:
             all_discrepancies[i] = np.abs(
-                np.sum((all_us_chain1 < all_unifs[i, :])*weights)  - np.mean(all_us_chain2 < all_unifs[i, :]))
+                np.sum(np.prod((all_us_chain1 < all_unifs[i, :]), axis = 1)*weights) - np.mean(
+                    np.prod(all_us_chain2 < all_unifs[i, :], axis=1)))
 
     return np.max(all_discrepancies)
