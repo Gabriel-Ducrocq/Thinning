@@ -151,13 +151,21 @@ def discrepency(chain1, chain2, chol_sigma_approx, mu_approx, n_max=100000, weig
     all_unifs = np.random.uniform(0, 1, size=(n_max, d))
     all_discrepancies = np.zeros(n_max)
     for i in prange(n_max):
-        if weights is None:
+        bools1 = (all_us_chain1 < all_unifs[i, :])
+        res1 = np.ones(len(bools1))
 
+        bools2 = (all_us_chain2 < all_unifs[i, :])
+        res2 = np.ones(len(bools2))
+        for m in range(bools1.shape[1]):
+            res1 *= bools1[:, m]
+            res2 *= bools2[:, m]
+
+        if weights is None:
             all_discrepancies[i] = np.abs(
-                np.mean((all_us_chain1 < all_unifs[i, :]).all(axis=1)) - np.mean((all_us_chain2 < all_unifs[i, :]).all(axis=1)))
+                np.mean(res1) - np.mean(res2))
         else:
             all_discrepancies[i] = np.abs(
-                np.sum(((all_us_chain1 < all_unifs[i, :]).all(axis=1))*weights) - np.mean(
-                    (all_us_chain2 < all_unifs[i, :]).all(axis=1)))
+                np.sum(res1*weights) - np.mean(
+                    res2))
 
     return np.max(all_discrepancies)
