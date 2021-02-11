@@ -5,6 +5,7 @@ from rpy2.robjects import FloatVector
 import time
 from config import N_KEEP
 from numba import njit, prange
+import math
 import matplotlib.pyplot as plt
 importr('BalancedSampling')
 
@@ -121,3 +122,41 @@ def compute_distance_matrix(x, y, Sigma=None):
 
 
 
+@njit()
+def transform_to_unif(x, chol_sigma_approx, mu_approx):
+    standard_normal = np.linalg.solve(chol_sigma_approx, x - mu_approx)
+    #return stats.norm.cdf(standard_normal)
+    res = np.zeros(len(standard_normal))
+    for k in prange(len(standard_normal)):
+        res[k] = (1/2)*(1 + math.erf(standard_normal[k]/np.sqrt(2)))
+
+    return res
+
+
+
+@njit(parallel=True)
+def discrepency(chain1, chain2, chol_sigma_approx, mu_approx, n_max=100000, weights = None):
+    n_chain1 = len(chain1)
+    n_chain2 = len(chain2)
+    d = chain1.shape[1]
+    all_us_chain1 = np.zeros((n_chain1, chain1.shape[1]))
+    for i in prange(n_chain1):
+        u = transform_to_unif(chain1[i, :], chol_sigma_approx, mu_approx)
+        all_us_chain1[i, :] = u
+
+    all_us_chain2 = np.zeros((n_chain2, chain2.shape[1]))
+    for i in prange(n_chain2):
+        u = transform_to_unif(chain2[i, :], chol_sigma_approx, mu_approx)
+        all_us_chain2[i, :] = u
+
+    all_unifs = np.random.uniform(0, 1, size=(n_max, d))
+    all_discrepancies = np.zeros(n_max)
+    for i in prange(n_max):
+        if weights is not None:
+            all_discrepancies[i] = np.abs(
+                np.mean(all_us_chain1 < all_unifs[i, :]) - np.mean(all_us_chain2 < all_unifs[i, :]))
+        else:
+            all_discrepancies[i] = np.abs(
+                np.sum((all_us_chain1 < all_unifs[i, :])*weights)  - np.mean(all_us_chain2 < all_unifs[i, :]))
+
+    return np.max(all_discrepancies)
