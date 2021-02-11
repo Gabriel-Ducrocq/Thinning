@@ -134,7 +134,6 @@ def transform_to_unif(x, chol_sigma_approx, mu_approx):
 
 
 
-@njit(parallel=True)
 def discrepency(chain1, chain2, chol_sigma_approx, mu_approx, n_max=100000, weights = None):
     n_chain1 = len(chain1)
     n_chain2 = len(chain2)
