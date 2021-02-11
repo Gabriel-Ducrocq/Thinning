@@ -15,7 +15,7 @@ parser.add_argument("burnin", help="burnin of the full chain")
 
 arguments = parser.parse_args()
 chain_path = arguments.chain_path
-grad_path = arguments.grad_path
+grad_path = arguments.gradient_path
 indexes = arguments.indexes_path
 output_path = arguments.output_path
 burnin = arguments.burnin
