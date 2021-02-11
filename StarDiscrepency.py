@@ -22,6 +22,8 @@ burnin = arguments.burnin
 
 chain = np.genfromtxt(arguments.chain_path, delimiter=",")
 gradient = np.genfromtxt(arguments.gradient_path, delimiter=",")
+indexes = np.load(indexes, allow_pickle=True)
+indexes = indexes.item()
 
 sigma_chain = np.cov(chain[burnin:].T)
 mean_chain = np.mean(chain[burnin:], axis = 0)
