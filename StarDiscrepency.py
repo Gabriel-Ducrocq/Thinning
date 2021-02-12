@@ -54,7 +54,7 @@ else:
         print(i)
         start = time.time()
         selected = all_selected[i, :]
-        chain_cube = chain[np.abs(selected) == 1]
+        chain_cube = chain[burnin_cube:][np.abs(selected) == 1]
         weights = selected[np.abs(selected) == 1]*omega/N_KEEP
         star_discrepency = utils.discrepency(chain_cube, chain[burnin:], sigma_chain, mean_chain, weights=weights)
         all_star.append(star_discrepency)
