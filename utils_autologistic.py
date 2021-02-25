@@ -11,7 +11,7 @@ def fill(mat):
     return mat
 
 
-@njit()
+@njit(parallel=True)
 def compute_features(y, neighbours):
     alpha_feature = np.sum(y)
     beta_feats = np.zeros(len(y))
@@ -31,7 +31,7 @@ def compute_dataset_regression(all_y, neighbours):
 
     return features
 
-
+@njit(parallel=True)
 def gibbs_iteration(y, alpha, beta, i, neighbours):
     exponent = alpha + (beta/2)*np.sum(y[neighbours[i, :] == 1])
     proba = np.exp(exponent)/(np.exp(exponent) + np.exp(-exponent))
@@ -42,7 +42,7 @@ def gibbs_iteration(y, alpha, beta, i, neighbours):
 
     return y
 
-
+@njit(parallel=True)
 def run_gibbs(y, alpha, beta, neighbours, n_iter=1000, history =True):
     h_y = []
     conditional_indexes = stats.randint.rvs(low=0, high=len(y), size=n_iter)
