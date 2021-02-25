@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import argparse
 import utils
 importr('BalancedSampling')
+importr('emplik')
 
 
 
