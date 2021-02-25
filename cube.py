@@ -17,6 +17,7 @@ parser.add_argument("output_path", help="path of the output weigths")
 parser.add_argument("N_KEEP", help="number of particles to keep after compression", type=int)
 parser.add_argument("n_experiments", help="number of times cube method should be run", type=int)
 parser.add_argument("burnin", help="number of initial particles to remove in order to avoid burnin", type=int)
+parser.add_argument("emplik", help="Should we use the empirical likelihood way of finding the weights", type=int)
 
 arguments = parser.parse_args()
 chain_path = arguments.chain_path
@@ -25,6 +26,7 @@ output_path = arguments.output_path
 N_KEEP = arguments.N_KEEP
 n_experiments = arguments.n_experiments
 burnin = arguments.burnin
+emplik = arguments.emplik
 
 ##Regression linéaire avec fonction quelcondque f(X) = Y.
 ##essayer avec la ligne d'intercept, regarder Art Owens.
@@ -43,6 +45,7 @@ def compute_weights(A):
 
 
 def test_weights(A):
+    A = A.T
     weights = np.zeros(A.shape[1])
     H = np.mean(A, axis=1)
     S_hh = np.matmul(A-H[:, None], (A-H[:, None]).T)
@@ -57,6 +60,17 @@ def test2(A):
     H = np.sum(A, axis= 1)
     Q = np.linalg.solve(np.matmul(A - H[:, None], (A-H[:, None]).T), A - H[:, None])
     return Q
+
+
+def get_constrained_weights(constraints):
+    ## A is (N_particles, N_constraints)
+    constraintsR = r['matrix'](FloatVector(np.array(list(constraints.flatten()))), nrow=constraints.shape[0],
+                               ncol=constraints.shape[1], byrow=True)
+    means = r['numeric'](constraints.shape[1])
+    w = r['matrix'](FloatVector(np.ones(constraints.shape[0])), nrow=constraints.shape[0])
+    result = r['el.test.wt2'](x=constraintsR, wt=w, mu=means, itertrace=False)
+    weights = np.array(result[0])
+    return weights
 
 
 def cube_method(A, point):
@@ -92,7 +106,11 @@ all_projected = []
 
 #projected_point_bis = project_one_chain(A.T, np.ones(A.shape[0])/len(A))
 #projected_point_bis /= np.sum(projected_point_bis)
-projected_point = test_weights(A.T)
+if emplik == 0:
+    projected_point = test_weights(A)
+else:
+    projected_point = get_constrained_weights(A)
+
 #Q = test2(A.T)
 #dim = 6
 #beta_hat = np.dot(Q, A[:, dim])
@@ -140,5 +158,5 @@ all_ED = np.array(all_ED)
 duration_cube = np.array(duration_cube)
 
 d = {"all_signs": all_signs, "all_selected":all_selected, "weights":projected_point, "burnin":burnin, "M":N_KEEP,
-     "ED":all_ED, "duration_cube":duration_cube}
+     "ED":all_ED, "duration_cube":duration_cube, "emplik":emplik}
 np.save(output_path, d, allow_pickle=True)

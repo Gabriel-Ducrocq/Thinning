@@ -14,7 +14,7 @@ importr('emplik')
 
 
 
-d = np.load("data/Lotka/MALA/constraintsCube.npy", allow_pickle = True)
+d = np.load("data/Lotka/PRECOND-MALA/M100/constraintsCube.npy", allow_pickle = True)
 d = d.item()
 constraints = d["constraints"]
 

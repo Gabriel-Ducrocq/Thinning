@@ -5,6 +5,10 @@ from sklearn.linear_model import LogisticRegression
 import time
 import matplotlib.pyplot as plt
 
+
+
+
+
 n_points = 10
 neighbour_matrix = np.zeros((n_points, n_points))
 neighbour_matrix = utils_autologistic.fill(neighbour_matrix)
@@ -19,10 +23,10 @@ all_coefs = []
 all_intercept = []
 start = time.time()
 
-for k in range(10000):
+for k in range(1):
     print("Iteration:", k)
     all_y_true = []
-    for i in range(1000):
+    for i in range(1):
         y = np.random.binomial(1, 0.5, n_points) * 2 - 1
         y = utils_autologistic.run_gibbs(y.copy(), alpha, beta, neighbour_matrix, n_iter=500, history=False)
         all_y_true.append(y)
@@ -80,7 +84,7 @@ d = {"coefs":all_coefs, "intercepts":all_intercept, "alpha":alpha, "beta":beta, 
      "beta_nce":beta_nce, "neighbour":neighbour_matrix}
 
 np.save("test.npy", d, allow_pickle=True)
-
+"""
 alpha_nce = 0.01
 beta_nce = 0.05
 d = np.load("test.npy", allow_pickle=True)
@@ -92,9 +96,11 @@ print(coefs.shape)
 
 
 fig, ax = plt.subplots(1, 2)
-ax[0].hist(coefs[:, 0, 0] + alpha_nce, alpha=0.5)
+ax[0].hist(coefs[:, 0, 0] + alpha_nce, alpha=0.5, bins = 15)
+ax[0].set_title("alpha")
 ax[0].axvline(x=alpha, color="red")
 
-ax[1].hist(coefs[:, 0, 1] + beta_nce, alpha=0.5)
+ax[1].hist(coefs[:, 0, 1] + beta_nce, alpha=0.5, bins = 15)
+ax[1].set_title("beta")
 ax[1].axvline(x=beta, color="red")
 plt.show()
