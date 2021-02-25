@@ -72,6 +72,14 @@ def log_star_first(z,n):
 
     return 2*n - n**2 * z
 
+
+@njit()
+def log_star(z,n):
+    if z >= 1/n:
+        return np.log(z)
+
+    return np.log(1/n) - 1.5 + 2*n*z - (n*z)**2/2
+
 log_star_second_vectorized = np.vectorize(log_star_second)
 log_star_first_vectorized = np.vectorize(log_star_first)
 
@@ -92,8 +100,49 @@ def compute_increments(constraints, lambd, n):
         y[i] = log_star_first(z[i], n)/coeff[i, 0]
 
     #y = log_star_first_vectorized(z, n)/coeff
+    print("Mat to invert")
+    diag_mat = np.diag(np.diag(mat_to_inv))
+    print(np.linalg.cond(np.dot(diag_mat, mat_to_inv)))
+    print(np.linalg.det(np.dot(diag_mat, mat_to_inv)))
+    _, v, _ = np.linalg.svd(np.dot(diag_mat, mat_to_inv))
+    print(v)
     increment = np.linalg.solve(mat_to_inv, np.dot(J.T, y))
     return increment
+
+@njit(parallel=True)
+def compute_hessian(lambd, constraints, n):
+    ## Constraints is n_(sample, dimension_constraints)
+    z = np.dot(constraints, lambd) + 1
+    #coeff = np.sqrt(-log_star_second_vectorized(z, n))
+    coeff = np.zeros((n, 1))
+    for i in prange(n):
+        coeff[i,:] = np.sqrt(-log_star_second(z[i], n))
+
+    J = coeff*constraints
+    hessian = np.dot(J.T, J)
+    return hessian
+
+@njit(parallel=True)
+def compute_gradient(lambd, constraints, n):
+    ## Constraints is n_(sample, dimension_constraints)
+    z = np.dot(constraints, lambd) + 1
+    #coeff = np.sqrt(-log_star_second_vectorized(z, n))
+    coeff = np.zeros((n, 1))
+    for i in prange(n):
+        coeff[i,:] = np.sqrt(-log_star_second(z[i], n))
+
+    J = coeff*constraints
+    y = np.zeros(n)
+    for i in prange(n):
+        y[i] = log_star_first(z[i], n)/coeff[i, 0]
+
+    grad = np.dot(J.T, y)
+    return grad
+
+
+#@njit(parallel=True)
+#def func_to_minimize(lambd, constraints, n):
+
 
 def newton_raphson(lambda_init, constraints):
     n = len(constraints)

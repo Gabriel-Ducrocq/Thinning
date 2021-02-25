@@ -26,7 +26,7 @@ indexes = np.load(indexes, allow_pickle=True)
 indexes = indexes.item()
 
 sigma_chain = np.cov(chain[burnin:].T)
-mean_chain = np.mean(chain[burnin:], axis = 0)
+mean_chain = np.mean(chain[burnin:], axis=0)
 
 if "SMPCOV" in indexes.keys() or "SCLMED" in indexes.keys() or "MED" in indexes.keys():
     results = {}
