@@ -19,7 +19,7 @@ all_coefs = []
 all_intercept = []
 start = time.time()
 
-for k in range(2):
+for k in range(10000):
     print("Iteration:", k)
     all_y_true = []
     for i in range(1000):
@@ -50,7 +50,6 @@ for k in range(2):
 
     all_y_false = np.array(all_y_false)
 
-    print("False is done !")
 
     #constraints = utils_autologistic.create_constraints(all_y_false, alpha_nce, beta_nce, neighbour_matrix)
 
