@@ -31,7 +31,7 @@ def compute_dataset_regression(all_y, neighbours):
 
     return features
 
-@njit(parallel=True)
+@njit()
 def gibbs_iteration(y, alpha, beta, i, neighbours):
     exponent = alpha + (beta/2)*np.sum(y[neighbours[i, :] == 1])
     proba = np.exp(exponent)/(np.exp(exponent) + np.exp(-exponent))

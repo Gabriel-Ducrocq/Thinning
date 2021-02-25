@@ -19,7 +19,7 @@ all_coefs = []
 all_intercept = []
 start = time.time()
 
-for k in range(1):
+for k in range(2):
     print("Iteration:", k)
     all_y_true = []
     for i in range(1000):
