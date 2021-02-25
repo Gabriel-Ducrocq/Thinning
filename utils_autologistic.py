@@ -35,23 +35,20 @@ def compute_dataset_regression(all_y, neighbours):
 def gibbs_iteration(y, alpha, beta, i, neighbours):
     exponent = alpha + (beta/2)*np.sum(y[neighbours[i, :] == 1])
     proba = np.exp(exponent)/(np.exp(exponent) + np.exp(-exponent))
-    if np.random.uniform() < proba:
+    if np.random.uniform(0, 1) < proba:
         y[i] = 1
     else:
         y[i] = -1
 
     return y
 
-@njit(parallel=True)
-def run_gibbs(y, alpha, beta, neighbours, n_iter=1000, history =True):
-    h_y = []
-    conditional_indexes = stats.randint.rvs(low=0, high=len(y), size=n_iter)
-    for index in conditional_indexes:
+@njit()
+def run_gibbs(y, alpha, beta, neighbours, n_iter=1000, history=True):
+    h_y = np.zeros((n_iter, len(y)))
+    conditional_indexes = np.random.randint(low=0, high=len(y), size=n_iter)
+    for i, index in enumerate(conditional_indexes):
         y = gibbs_iteration(y.copy(), alpha, beta, index ,neighbours)
-        h_y.append(y)
-
-    if history:
-        return np.array(h_y)
+        h_y[i, :] = y
 
     return y
 

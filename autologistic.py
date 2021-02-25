@@ -19,12 +19,12 @@ all_coefs = []
 all_intercept = []
 start = time.time()
 
-for k in range(200):
+for k in range(1):
     print("Iteration:", k)
-    y = np.random.binomial(1, 0.5, n_points)*2 - 1
     all_y_true = []
     for i in range(1000):
-        y = utils_autologistic.run_gibbs(y, alpha, beta, neighbour_matrix, n_iter=500, history=False)
+        y = np.random.binomial(1, 0.5, n_points) * 2 - 1
+        y = utils_autologistic.run_gibbs(y.copy(), alpha, beta, neighbour_matrix, n_iter=500, history=False)
         all_y_true.append(y)
 
 
@@ -41,11 +41,10 @@ for k in range(200):
 
     alpha_nce = 0.01
     beta_nce = 0.05
-    y_init = np.random.binomial(1, 0.5, n_points)*2 - 1
-
     all_y_false = []
     for _ in range(1000):
-        y = utils_autologistic.run_gibbs(y_init, alpha_nce, beta_nce, neighbour_matrix, n_iter=500, history=False)
+        y = np.random.binomial(1, 0.5, n_points) * 2 - 1
+        y = utils_autologistic.run_gibbs(y.copy(), alpha_nce, beta_nce, neighbour_matrix, n_iter=500, history=False)
         all_y_false.append(y)
 
 
