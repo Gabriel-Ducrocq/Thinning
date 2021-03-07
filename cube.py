@@ -74,7 +74,7 @@ def get_constrained_weights(constraints):
     return weights
 
 
-def cube_method(A, point):
+def cube_method(A, point, N_KEEP):
     ### A is (N_constraints, N_particles) and point is (N_particles)
     signs = np.sign(point)
     A_signs = A.T.copy()
@@ -139,7 +139,7 @@ for k in range(n_experiments):
     start = time.time()
     cpu_start = time.clock()
     print("Starting Cube:")
-    selected, signs = cube_method(A, projected_point)
+    selected, signs = cube_method(A, projected_point, N_KEEP)
     duration_cube.append(time.clock() - cpu_start )
     print("Duration Cube:", time.time() - start)
     all_signs.append(signs)

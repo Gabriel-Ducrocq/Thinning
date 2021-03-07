@@ -218,3 +218,38 @@ def discrepency(chain1, chain2, chol_sigma_approx, mu_approx, n_max=100000, weig
                     res2))
 
     return np.max(all_discrepancies)
+
+
+
+def get_weights(A):
+    A = A.T
+    weights = np.zeros(A.shape[1])
+    H = np.mean(A, axis=1)
+    S_hh = np.matmul(A-H[:, None], (A-H[:, None]).T)
+    d = np.linalg.solve(S_hh, H)
+    for i in range(len(weights)):
+        weights[i] = np.dot(A[:,i]-H, d)
+
+    return 1/len(weights) - weights
+
+def get_beta(A, func):
+    A = A.T
+    H = np.mean(A, axis=1)
+    S_hh = np.matmul(A-H[:, None], (A-H[:, None]).T)
+    second_term = np.dot((A - H[:, None]), func)
+    beta = np.linalg.solve(S_hh,second_term)
+    return beta
+
+def cube_method(A, point, N_KEEP):
+    ### A is (N_constraints, N_particles) and point is (N_particles)
+    signs = np.sign(point)
+    A_signs = A.T.copy()
+    A_signs[1:, :] = A_signs[1:, :]*signs
+    point_signs = np.abs(point)*N_KEEP/np.sum(np.abs(point))
+    A_signs *= point_signs
+    A_signs_R = r['matrix'](FloatVector(np.array(list(A_signs.flatten()))), nrow=A_signs.T.shape[0])
+    print("Flight phase:")
+    res = r["flightphase"](FloatVector(point_signs), A_signs_R)
+    print("Landing Phase:")
+    land_point = r["landingphase"](FloatVector(point_signs), res, A_signs_R)
+    return np.array([r for r in land_point]), signs
