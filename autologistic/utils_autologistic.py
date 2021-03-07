@@ -43,25 +43,41 @@ def gibbs_iteration(y, alpha, beta, i, neighbours):
     return y
 
 @njit()
-def run_gibbs(y, alpha, beta, neighbours, n_iter=1000, history=True):
-    h_y = np.zeros((n_iter, len(y)))
+def run_gibbs_history(y, alpha, beta, neighbours, n_iter=1000):
+    h_y = np.zeros((n_iter, len(y)), dtype=np.float32)
     conditional_indexes = np.random.randint(low=0, high=len(y), size=n_iter)
     for i, index in enumerate(conditional_indexes):
         y = gibbs_iteration(y.copy(), alpha, beta, index ,neighbours)
         h_y[i, :] = y
 
+    return h_y
+
+
+@njit()
+def run_gibbs_single_output(y, alpha, beta, neighbours, n_iter=1000):
+    conditional_indexes = np.random.randint(low=0, high=len(y), size=n_iter)
+    for i, index in enumerate(conditional_indexes):
+        y = gibbs_iteration(y.copy(), alpha, beta, index ,neighbours)
+
     return y
 
 
+def run_gibbs_wrapper(y, alpha, beta, neighbours, n_iter=1000, history=True):
+    if history:
+        return run_gibbs_history(y, alpha, beta, neighbours, n_iter =n_iter)
+
+    return run_gibbs_single_output(y, alpha, beta, neighbours, n_iter=n_iter)
+
+
 @njit(parallel=True)
-def create_constraints(points: list, alpha: float, beta:float, neighbours: list):
+def create_constraints(points, alpha, beta, neighbours):
     constraints = np.zeros((len(points), points.shape[1]))
     for i in prange(len(points)):
         y = points[i, :]
         for j in range(points.shape[1]):
             exponent = alpha + (beta / 2) * np.sum(y[neighbours[j, :] == 1])
             proba = np.exp(exponent) / (np.exp(exponent) + np.exp(-exponent))
-            constraints[i, j] = y[j] - 2*proba - 1
+            constraints[i, j] = y[j] - (2*proba - 1)
 
     return constraints
 
