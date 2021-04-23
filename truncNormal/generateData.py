@@ -5,9 +5,12 @@ from scipy.stats import truncnorm, norm
 
 
 
-mu = np.array([0, 0, 0])+10
+#mu = np.array([0, 0, 0])+10
+mu = np.array([1, -1, 0.5])
 #mu = 10
-Sigma =np.eye(3)
+#Sigma =np.eye(3)
+Sigma = np.array([[1, 0.5,1], [0.5, 1.5,0.3], [1, 0.3, 2]])
+
 #Sigma = 1
 h_x = []
 

@@ -41,11 +41,11 @@ sigma = np.array([[1.54778467, 0.77358515, 0.53010819],
        [0.77358515, 2.4881138 , 0.46121046],
        [0.53010819, 0.46121046, 1.79801314]])
 
-coefficients = []
-intercepts = []
-all_means = []
-all_times = []
+triu_indices = np.triu_indices(len(mu))
 #h_true = truncnorm.rvs(-mu_true/np.sqrt(sigma_true), np.inf, mu_true, np.sqrt(sigma_true), size = 100000)
+all_means = []
+all_means_cv = []
+all_cov = []
 #regressors_true = np.vstack([h_true, -(1/2)*h_true**2]).T
 #h_y = np.zeros((1000, 3))
 #h_y[:, 0] = truncnorm.rvs(-mu_true[0]/np.sqrt(sigma_true[0, 0]), np.inf, mu_true[0], np.sqrt(sigma_true[0, 0]), size=len(h_y))
@@ -87,43 +87,38 @@ for k in range(n_experiments):
         indexes = np.linspace(0, len(h_x)-1, M, dtype = int)
         h_x = h_x[indexes, :]
         print("Shape new h_x:", h_x.shape)
-    triu_indices = np.triu_indices(h_x.shape[1])
-    regressors_false = utils_truncated.compute_all_regressors(h_x, triu_indices)
-    #regressors_false= np.hstack([h_x[:, 0][:, None], h_x[:, 1][:, None],-(1/2)*h_x[:, 0][:, None]**2, -(1/2)*h_x[:, 1][:, None]**2])
-    #regressors_true= np.hstack([h_y[:, 0][:, None], h_y[:, 1][:, None],-(1/2)*h_y[:, 0][:, None]**2, -(1/2)*h_y[:, 1][:, None]**2])
-    regressors_true = utils_truncated.compute_all_regressors(h_y, triu_indices)
-    labels = np.zeros(len(regressors_false)+len(regressors_true))
-    labels[:len(regressors_true)] = 1
-    #print(regressor_true.shape)
-    #print(regressor_false.shape)
-    all_points = np.vstack((regressors_true, regressors_false))
-    logit = LogisticRegression(solver="newton-cg",penalty="none", fit_intercept = True, max_iter = 10000)
-    logit.fit(all_points, labels)
-    print(logit.coef_)
-    coefficients.append(logit.coef_[0, :])
-    intercepts.append(logit.intercept_)
-    #print(np.linalg.solve(sigma_true, mu_true))
-    #X = sm.add_constant(control_variates)
-    #reg = sm.OLS(h_x[:, 0], X)
-    #results = reg.fit()
-    #intercept = results.params[0]
-    #intercepts.append(intercept)
-    #print(intercept)
-    #print(np.mean(h_x[:, 0]))
-    #all_means.append(np.mean(h_x[:, 0]))
-    end = time.time()
-    print("Time",end - start)
-    all_times.append(end-start)
 
-coefficients = np.array(coefficients)
-intercepts = np.array(intercepts)
-all_times = np.array(all_times)
-r_true = np.linalg.solve(sigma_true, mu_true)
-q_true = np.linalg.inv(sigma_true)
-print("R true", r_true)
-print("Intercept")
-print("Shape:",coefficients.shape)
-print("Mean", np.mean(coefficients, axis =0))
-print("Std", np.std(coefficients, axis = 0))
-results = {"all_times":all_times, "gibbs_iter":n_iter, "N_KEEP":M ,"use_cube":use_cube, "use_thin":use_thin,"mu_true":mu_true, "sigma_true":sigma_true, "mu_false":mu, "sigma_false":sigma, "estim_coeffs":coefficients, "intercepts":intercepts, "input_path":arguments.datapath}
-np.save(output_path, results)
+
+    print(h_x.shape)
+    control_variates = utils_truncated.construct_cv(h_x.copy(), mu, sigma)
+    linModel = LinearRegression()
+    linModel.fit(control_variates, h_x[:,0 ])
+
+    estimated_mean = np.mean(h_x, axis = 0)
+    estimated_covariance = np.cov(h_x.T)[triu_indices]
+
+    print(control_variates.shape)
+    all_means.append(estimated_mean)
+    all_means_cv.append(linModel.intercept_)
+    all_cov.append(estimated_covariance)
+    end = time.time()
+    print(end - start)
+
+all_means = np.array(all_means)
+all_cov = np.array(all_cov)
+all_means_cv = np.array(all_means_cv)
+
+
+print(np.mean(all_means, axis = 0))
+print(np.std(all_means, axis = 0))
+print("\n")
+print(np.mean(all_means_cv, axis = 0))
+print(np.std(all_means_cv, axis = 0))
+print("\n")
+print(np.mean(all_cov, axis = 0))
+print(np.std(all_cov, axis = 0))
+print(np.mean(all_means_cv, axis = 0))
+print(np.std(all_means_cv, axis = 0))
+d = {"estim_means":all_means, "all_covariances":all_cov}
+np.save(output_path, d)
+
