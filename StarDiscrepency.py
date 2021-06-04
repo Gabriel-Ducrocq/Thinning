@@ -10,7 +10,7 @@ parser.add_argument("chain_path", help="path of the chain")
 parser.add_argument("gradient_path", help="path of the gradient")
 parser.add_argument("indexes_path", help="path of the indexes and weights")
 parser.add_argument("output_path", help="path of the output weigths")
-parser.add_argument("burnin", help="burnin of the full chain", type = int)
+parser.add_argument("burnin", help="burnin of the full chain in order to have a good representation of the target distribution", type = int)
 
 
 arguments = parser.parse_args()
@@ -27,6 +27,7 @@ indexes = indexes.item()
 
 sigma_chain = np.cov(chain[burnin:].T)
 mean_chain = np.mean(chain[burnin:], axis=0)
+sigma_chain_chol = np.linalg.cholesky(sigma_chain)
 
 if "SMPCOV" in indexes.keys() or "SCLMED" in indexes.keys() or "MED" in indexes.keys():
     results = {}
@@ -34,7 +35,7 @@ if "SMPCOV" in indexes.keys() or "SCLMED" in indexes.keys() or "MED" in indexes.
     for method in indexes.keys():
         print(method)
         start = time.time()
-        star_discrepency = utils.discrepency(chain[indexes[method]["indexes"]], chain[burnin:], sigma_chain, mean_chain)
+        star_discrepency = utils.discrepency(chain[indexes[method]["indexes"]], chain[burnin:], sigma_chain_chol, mean_chain)
         results[method] = star_discrepency
         print("Star discrepency " + method + ": ", star_discrepency)
         print(time.time() - start)
@@ -56,7 +57,7 @@ else:
         selected = all_selected[i, :]
         chain_cube = chain[burnin_cube:][np.abs(selected) == 1]
         weights = selected[np.abs(selected) == 1]*omega/N_KEEP
-        star_discrepency = utils.discrepency(chain_cube, chain[burnin:], sigma_chain, mean_chain, weights=weights)
+        star_discrepency = utils.discrepency(chain_cube, chain[burnin:], sigma_chain_chol, mean_chain, weights=weights)
         all_star.append(star_discrepency)
         print("Star Discrepency " + ": ", star_discrepency)
         print(time.time() - start)

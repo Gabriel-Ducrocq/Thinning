@@ -27,7 +27,7 @@ mean_chain = np.mean(chain[burnin:], axis=0)
 
 indexes = np.linspace(burnin, len(chain)-1, M, dtype=int)
 
-star_discrepency = utils.discrepency(chain[indexes], chain[burnin:], sigma_chain, mean_chain)
+star_discrepency = utils.discrepency(chain[indexes], chain[burnin:], np.linalg.cholesky(sigma_chain), mean_chain)
 vfk0 = make_imq(chain, gradient, pre='med')
 
 print("Star discrepency done")

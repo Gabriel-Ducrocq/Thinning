@@ -12,13 +12,14 @@ parser.add_argument("chain_path", help="path of the chain")
 parser.add_argument("grad_path", help="path of the gradient")
 parser.add_argument("output_path", help="path of the output weigths")
 parser.add_argument("N_KEEP", help="number of particles to keep after compression", type=int)
-
+parser.add_argument("burnin", help="burnin for the approximation of the target distribution in ED", type = int)
 
 arguments = parser.parse_args()
 chain_path = arguments.chain_path
 grad_path = arguments.grad_path
 output_path = arguments.output_path
 N_KEEP = arguments.N_KEEP
+burnin = arguments.burnin
 
 chain = np.genfromtxt(arguments.chain_path, delimiter=",")
 grad = np.genfromtxt(arguments.grad_path, delimiter=",")
@@ -32,6 +33,7 @@ def run_KSD_thinning(chain, grad, kernel="smpcov", N_KEEP = 100, full_chain_dist
     ST_distance_mat = utils.compute_distance_matrix(ST_chain, chain_noBurnin, sigma)
     ST_auto_distance = utils.compute_distance_matrix(ST_chain, ST_chain, sigma)
     ST_ED = 2*np.sum(ST_distance_mat)/(len(chain_noBurnin)*N_KEEP) - np.sum(ST_auto_distance)/N_KEEP**2 - full_chain_dist
+    print("ED:", ST_ED)
     print("Time to ED " + kernel, time.time() - start)
     return ST_ED, indexes
 
@@ -39,9 +41,9 @@ def run_KSD_thinning(chain, grad, kernel="smpcov", N_KEEP = 100, full_chain_dist
 
 
 
-ST_ED_smpcov, indexes_smpcov = run_KSD_thinning(chain, grad, kernel="smpcov", N_KEEP = N_KEEP)
-ST_ED_sclmed, indexes_sclmed = run_KSD_thinning(chain, grad, kernel="sclmed", N_KEEP = N_KEEP)
-ST_ED_med, indexes_med = run_KSD_thinning(chain, grad, kernel="med", N_KEEP=N_KEEP)
+ST_ED_smpcov, indexes_smpcov = run_KSD_thinning(chain, grad, kernel="smpcov", N_KEEP = N_KEEP, burnin=burnin)
+ST_ED_sclmed, indexes_sclmed = run_KSD_thinning(chain, grad, kernel="sclmed", N_KEEP = N_KEEP, burnin=burnin)
+ST_ED_med, indexes_med = run_KSD_thinning(chain, grad, kernel="med", N_KEEP=N_KEEP, burnin=burnin)
 
 
 
