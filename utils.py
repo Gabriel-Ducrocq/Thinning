@@ -49,14 +49,24 @@ def compute_distance_matrix(x, y, Sigma=None):
     return distance_matrix
 
 
-def energyDistance(chain, selected, signs, omega, N_KEEP, full_chain_dist = 0):
-    x = chain[np.abs(selected) == 1, :]
-    y = chain[:]
+def energyDistance(chain, selected, signs, omega, N_KEEP,burnin_cube, burnin = 0, full_chain_dist = 0):
+    sum_signed_measure = (omega/N_KEEP)*np.sum(signs[np.abs(selected) == 1])
+    x = chain[burnin_cube:][np.abs(selected) == 1, :]
+    y = chain[burnin:]
     dist_mat = compute_distance_matrix(x,y)
     auto_dist_x = compute_distance_matrix(x, x)
     signs_matrix = np.matmul(signs[np.abs(selected) == 1][:, None], signs[np.abs(selected) == 1][None, :])
-    return 2*(omega/(len(chain)*N_KEEP))* np.sum(signs[np.abs(selected) == 1]*np.sum(dist_mat, axis = 1)) - (omega/N_KEEP)**2*np.sum(
+    return 2*(omega/(len(chain)*N_KEEP*sum_signed_measure))* np.sum(signs[np.abs(selected) == 1]*np.sum(dist_mat, axis = 1)) - (omega/(N_KEEP*sum_signed_measure))**2*np.sum(
         signs_matrix*auto_dist_x) - full_chain_dist
+
+#def energyDistance(chain, selected, signs, omega, N_KEEP, full_chain_dist = 0, burnin_ed=0):
+#    x = chain[np.abs(selected) == 1, :]
+#    y = chain[burnin_ed:]
+#    dist_mat = compute_distance_matrix(x,y)
+#    auto_dist_x = compute_distance_matrix(x, x)
+#    signs_matrix = np.matmul(signs[np.abs(selected) == 1][:, None], signs[np.abs(selected) == 1][None, :])
+#    return 2*(omega/(len(chain)*N_KEEP))* np.sum(signs[np.abs(selected) == 1]*np.sum(dist_mat, axis = 1)) - (omega/N_KEEP)**2*np.sum(
+#        signs_matrix*auto_dist_x) - full_chain_dist
 
 @njit()
 def log_star_second(z, n):

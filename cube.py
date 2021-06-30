@@ -19,6 +19,7 @@ parser.add_argument("N_KEEP", help="number of particles to keep after compressio
 parser.add_argument("n_experiments", help="number of times cube method should be run", type=int)
 parser.add_argument("burnin", help="number of initial particles to remove in order to avoid burnin", type=int)
 parser.add_argument("emplik", help="Should we use the empirical likelihood way of finding the weights", type=int)
+parser.add_argument("burnin_ed", help="Burnin for the approximation of the energy distance", type= int)
 
 arguments = parser.parse_args()
 chain_path = arguments.chain_path
@@ -28,6 +29,7 @@ N_KEEP = arguments.N_KEEP
 n_experiments = arguments.n_experiments
 burnin = arguments.burnin
 emplik = arguments.emplik
+burnin_ed = arguments.burnin_ed
 
 ##Regression linéaire avec fonction quelcondque f(X) = Y.
 ##essayer avec la ligne d'intercept, regarder Art Owens.
@@ -96,7 +98,7 @@ d = d.item()
 A = d["constraints"]
 
 A = A[burnin:, :]
-chain = chain[burnin:, :]
+#chain = chain[burnin:, :]
 all_selected = []
 all_signs = []
 all_weights = []
@@ -145,7 +147,7 @@ for k in range(n_experiments):
     all_signs.append(signs)
     all_selected.append(selected*signs)
     omega = np.sum(np.abs(projected_point))
-    ED = utils.energyDistance(chain, selected, signs,omega, N_KEEP)
+    ED = utils.energyDistance(chain, selected, signs,omega, N_KEEP, burnin, burnin_ed)
     all_ED.append(ED)
     end = time.time()
     print("ED:", ED)

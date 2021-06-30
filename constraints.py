@@ -17,14 +17,25 @@ output_path = arguments.mcmcAlgo
 second_order = arguments.second_order
 
 
+#@njit
+#def create_constraint(i,j, chain, grad):
+    #i, j are int
+    # chain, grad are (N_particles, dimension)
+#    if i == j:
+#        return 2*chain[:,i] + chain[:, i]**2 * grad[:, i]
+
+#    return chain[:, j] + chain[:, i]*chain[:, j] * grad[:, i]
+
 @njit
 def create_constraint(i,j, chain, grad):
     #i, j are int
     # chain, grad are (N_particles, dimension)
     if i == j:
-        return 2*chain[:,i] + chain[:, i]**2 * grad[:, i]
+        return 1 + chain[:, i]* grad[:, i]
 
-    return chain[:, j] + chain[:, i]*chain[:, j] * grad[:, i]
+    else:
+        return chain[:, j]*grad[:, i]
+
 
 @njit(parallel=True)
 def create_constraint_matrix(chain, grad):
@@ -44,8 +55,9 @@ n_particles = len(h_x)
 n_chains = 1
 
 
-x_times_grad = h_x * h_grad + 1
-all_As = np.concatenate([h_grad, x_times_grad], axis = 1)
+#x_times_grad = h_x * h_grad + 1
+#all_As = np.concatenate([h_grad, x_times_grad], axis = 1)
+all_As = h_grad
 print("Constraints on mean done !")
 
 if second_order:
